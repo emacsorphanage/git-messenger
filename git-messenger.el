@@ -55,7 +55,7 @@
       (unless (zerop (call-process-shell-command cmd nil t))
         (error "Failed: %s" cmd))
       (goto-char (point-min))
-      (forward-line 4)
+      (forward-paragraph)
       (buffer-substring-no-properties (point) (point-max)))))
 
 ;;;###autoload

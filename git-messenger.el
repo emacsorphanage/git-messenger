@@ -44,7 +44,7 @@
 
 (defun git-messenger:blame-command (file line)
   (format "git --no-pager blame -L %d,+1 --porcelain %s"
-	  line (shell-quote-argument file)))
+          line (shell-quote-argument file)))
 
 (defun git-messenger:cat-file-command (commit-id)
   (format "git --no-pager cat-file commit %s" commit-id))
@@ -64,11 +64,11 @@
     (if (string-match "\\`0+\\'" commit-id)
         (format "* not yet committed *")
       (let ((cmd (git-messenger:cat-file-command commit-id)))
-	(unless (zerop (call-process-shell-command cmd nil t))
-	  (error "Failed: %s" cmd))
-	(goto-char (point-min))
-	(forward-paragraph)
-	(buffer-substring-no-properties (point) (point-max))))))
+        (unless (zerop (call-process-shell-command cmd nil t))
+          (error "Failed: %s" cmd))
+        (goto-char (point-min))
+        (forward-paragraph)
+        (buffer-substring-no-properties (point) (point-max))))))
 
 ;;;###autoload
 (defun git-messenger:popup-message ()

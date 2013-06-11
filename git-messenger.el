@@ -61,9 +61,8 @@
 
 (defun git-messenger:commit-message (commit-id)
   (with-temp-buffer
-    (if (string-match
-	 "0000000000000000000000000000000000000000" commit-id)
-	(format "* not yet committed *")
+    (if (string-match "\\`0+\\'" commit-id)
+        (format "* not yet committed *")
       (let ((cmd (git-messenger:cat-file-command commit-id)))
 	(unless (zerop (call-process-shell-command cmd nil t))
 	  (error "Failed: %s" cmd))

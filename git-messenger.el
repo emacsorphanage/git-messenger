@@ -43,7 +43,8 @@
   :group 'git-messenger)
 
 (defun git-messenger:blame-command (file line)
-  (format "git --no-pager blame -L %d,+1 --porcelain %s" line file))
+  (format "git --no-pager blame -L %d,+1 --porcelain %s"
+	  line (shell-quote-argument file)))
 
 (defun git-messenger:cat-file-command (commit-id)
   (format "git --no-pager cat-file commit %s" commit-id))

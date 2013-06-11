@@ -72,12 +72,14 @@
 
 ;;;###autoload
 (defun git-messenger:popup-message ()
+  "Pop up a message showing the last commit message for the current line."
   (interactive)
   (let* ((file (buffer-file-name))
          (line (line-number-at-pos))
-         (commit-id (git-messenger:commit-id-at-line file line))
-         (message (git-messenger:commit-message commit-id)))
-    (popup-tip message)))
+         (commit-id (git-messenger:commit-id-at-line file line)))
+    (if (string-match "^0+$" commit-id)
+        (message "No history for current line")
+      (popup-tip (git-messenger:commit-message commit-id)))))
 
 (provide 'git-messenger)
 

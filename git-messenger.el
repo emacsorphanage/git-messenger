@@ -61,12 +61,15 @@
 
 (defun git-messenger:commit-message (commit-id)
   (with-temp-buffer
-    (let ((cmd (git-messenger:cat-file-command commit-id)))
-      (unless (zerop (call-process-shell-command cmd nil t))
-        (error "Failed: %s" cmd))
-      (goto-char (point-min))
-      (forward-paragraph)
-      (buffer-substring-no-properties (point) (point-max)))))
+    (if (string-match
+	 "0000000000000000000000000000000000000000" commit-id)
+	(format "* not yet committed *")
+      (let ((cmd (git-messenger:cat-file-command commit-id)))
+	(unless (zerop (call-process-shell-command cmd nil t))
+	  (error "Failed: %s" cmd))
+	(goto-char (point-min))
+	(forward-paragraph)
+	(buffer-substring-no-properties (point) (point-max))))))
 
 ;;;###autoload
 (defun git-messenger:popup-message ()

@@ -81,4 +81,9 @@
 
 (provide 'git-messenger)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
+
 ;;; git-messenger.el ends here

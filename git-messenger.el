@@ -47,6 +47,11 @@
   :type 'bool
   :group 'git-messenger)
 
+(defcustom git-messenger:after-popup-hook nil
+  "hook run after popup commit message. This hook is taken popup-ed message"
+  :type 'hook
+  :group 'git-messenger)
+
 (defsubst git-messenger:blame-command (file line)
   (format "git --no-pager blame -L %d,+1 --porcelain %s"
           line (shell-quote-argument file)))
@@ -113,6 +118,7 @@
                               (git-messenger:format-detail commit-id author message)
                             message)))
     (popup-tip popuped-message)
+    (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 
 (provide 'git-messenger)
 

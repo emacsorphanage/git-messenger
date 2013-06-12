@@ -42,16 +42,16 @@
   "git messenger"
   :group 'git-messenger)
 
-(defun git-messenger:blame-command (file line)
 (defcustom git-messenger:show-detail nil
   "Pop up commit ID and author name too"
   :type 'bool
   :group 'git-messenger)
 
+(defsubst git-messenger:blame-command (file line)
   (format "git --no-pager blame -L %d,+1 --porcelain %s"
           line (shell-quote-argument file)))
 
-(defun git-messenger:cat-file-command (commit-id)
+(defsubst git-messenger:cat-file-command (commit-id)
   (format "git --no-pager cat-file commit %s" commit-id))
 
 (defun git-messenger:commit-info-at-line (file line)

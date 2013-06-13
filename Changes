@@ -1,5 +1,8 @@
 Revision history for git-messenger.el
 
+Revision 0.03  2013/06/13 syohex
+  - Support showing detail(Advice by redguardtoo)
+
 Revision 0.02  2013/06/11 syohex
   - Support not committed line(Thanks @stsquad, @percell)
   - Shell Quote file name

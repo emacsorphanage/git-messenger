@@ -1,5 +1,9 @@
 Revision history for git-messenger.el
 
+Revision 0.04  2013/06/13 syohex
+  - Refactoring
+    rename confused variable name
+
 Revision 0.03  2013/06/13 syohex
   - Support showing detail(Advice by redguardtoo)
 

@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-messenger
-;; Version: 0.03
+;; Version: 0.04
 ;; Package-Requires: ((popup "0.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -113,10 +113,10 @@
          (commit-info (git-messenger:commit-info-at-line file line))
          (commit-id (car commit-info))
          (author (cdr commit-info))
-         (message (git-messenger:commit-message commit-id))
+         (msg (git-messenger:commit-message commit-id))
          (popuped-message (if (git-messenger:show-detail-p commit-id)
-                              (git-messenger:format-detail commit-id author message)
-                            message)))
+                              (git-messenger:format-detail commit-id author msg)
+                            msg)))
     (popup-tip popuped-message)
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 

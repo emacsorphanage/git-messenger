@@ -30,6 +30,10 @@ Always show detail message if this value is `t`.
 
 ## Hooks
 
+### `git-messenger:before-popup-hook`
+
+Run before popup commit message. Hook function take one argument, commit message.
+
 ### `git-messenger:after-popup-hook`
 
 Run after popup commit message. Hook function take one argument, commit message.

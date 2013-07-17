@@ -47,6 +47,11 @@
   :type 'bool
   :group 'git-messenger)
 
+(defcustom git-messenger:before-popup-hook nil
+  "hook run before popup commit message. This hook is taken popup-ed message"
+  :type 'hook
+  :group 'git-messenger)
+
 (defcustom git-messenger:after-popup-hook nil
   "hook run after popup commit message. This hook is taken popup-ed message"
   :type 'hook
@@ -117,6 +122,7 @@
          (popuped-message (if (git-messenger:show-detail-p commit-id)
                               (git-messenger:format-detail commit-id author msg)
                             msg)))
+    (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
     (popup-tip popuped-message)
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 

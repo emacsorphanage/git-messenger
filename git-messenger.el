@@ -1,6 +1,6 @@
 ;;; git-messenger.el --- Port of gitmessenger.vim
 
-;; Copyright (C) 2013 by Syohei YOSHIDA
+;; Copyright (C) 2014 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-messenger
@@ -37,10 +37,11 @@
   (require 'cl))
 
 (require 'popup)
+(require 'tramp)
 
 (defgroup git-messenger nil
   "git messenger"
-  :group 'git-messenger)
+  :group 'vc)
 
 (defcustom git-messenger:show-detail nil
   "Pop up commit ID and author name too"
@@ -57,17 +58,28 @@
   :type 'hook
   :group 'git-messenger)
 
-(defsubst git-messenger:blame-command (file line)
-  (format "git --no-pager blame -w -L %d,+1 --porcelain %s"
-          line (shell-quote-argument file)))
+(defun git-messenger:real-file-name (file)
+  (if (not (file-remote-p file))
+      file
+    (aref (tramp-dissect-file-name file) 3)))
+
+(defun git-messenger:blame-command (file line)
+  (let ((real-file (git-messenger:real-file-name file)))
+    (format "git --no-pager blame -w -L %d,+1 --porcelain %s"
+            line (shell-quote-argument (shell-quote-argument real-file)))))
 
 (defsubst git-messenger:cat-file-command (commit-id)
   (format "git --no-pager cat-file commit %s" commit-id))
 
-(defun git-messenger:commit-info-at-line (file line)
+(defun git-messenger:execute-command (cmd remote)
+  (if (not remote)
+      (call-process-shell-command cmd nil t)
+    (process-file-shell-command cmd nil t)))
+
+(defun git-messenger:commit-info-at-line (file line remote-p)
   (with-temp-buffer
     (let ((cmd (git-messenger:blame-command file line)))
-      (unless (zerop (call-process-shell-command cmd nil t))
+      (unless (zerop (git-messenger:execute-command cmd remote-p))
         (error "Failed: %s" cmd))
       (goto-char (point-min))
       (let* ((id-line (buffer-substring-no-properties
@@ -79,30 +91,30 @@
         (cons commit-id author)))))
 
 (defsubst git-messenger:not-committed-id-p (commit-id)
-  (string-match "\\`0+\\'" commit-id))
+  (string-match-p "\\`0+\\'" commit-id))
 
-(defun git-messenger:commit-message (commit-id)
+(defun git-messenger:commit-message (commit-id remote-p)
   (with-temp-buffer
     (if (git-messenger:not-committed-id-p commit-id)
-        (format "* not yet committed *")
+        "* not yet committed *"
       (let ((cmd (git-messenger:cat-file-command commit-id)))
-        (unless (zerop (call-process-shell-command cmd nil t))
+        (unless (zerop (git-messenger:execute-command cmd remote-p))
           (error "Failed: %s" cmd))
         (goto-char (point-min))
         (forward-paragraph)
         (buffer-substring-no-properties (point) (point-max))))))
 
-(defun git-messenger:commit-date (commit-id)
+(defun git-messenger:commit-date (commit-id remote-p)
   (let ((cmd (format "git --no-pager show --pretty=%%cd %s" commit-id)))
     (with-temp-buffer
-      (unless (zerop (call-process-shell-command cmd nil t))
+      (unless (zerop (git-messenger:execute-command cmd remote-p))
         (error "Failed %s" cmd))
       (goto-char (point-min))
       (buffer-substring-no-properties
        (line-beginning-position) (line-end-position)))))
 
-(defun git-messenger:format-detail (commit-id author message)
-  (let ((date (git-messenger:commit-date commit-id)))
+(defun git-messenger:format-detail (commit-id author message remote-p)
+  (let ((date (git-messenger:commit-date commit-id remote-p)))
     (format "commit : %s \nAuthor : %s\nDate   : %s \n%s"
             (substring commit-id 0 8) author date message)))
 
@@ -113,14 +125,15 @@
 ;;;###autoload
 (defun git-messenger:popup-message ()
   (interactive)
-  (let* ((file (buffer-file-name))
+  (let* ((file (buffer-file-name (buffer-base-buffer)))
+         (remote-p (file-remote-p file))
          (line (line-number-at-pos))
-         (commit-info (git-messenger:commit-info-at-line file line))
+         (commit-info (git-messenger:commit-info-at-line file line remote-p))
          (commit-id (car commit-info))
          (author (cdr commit-info))
-         (msg (git-messenger:commit-message commit-id))
+         (msg (git-messenger:commit-message commit-id remote-p))
          (popuped-message (if (git-messenger:show-detail-p commit-id)
-                              (git-messenger:format-detail commit-id author msg)
+                              (git-messenger:format-detail commit-id author msg remote-p)
                             msg)))
     (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
     (popup-tip popuped-message)

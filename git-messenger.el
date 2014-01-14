@@ -63,7 +63,7 @@
 (defun git-messenger:blame-command (file line)
   (let ((real-file (git-messenger:real-file-name file)))
     (format "git --no-pager blame -w -L %d,+1 --porcelain %s"
-            line (shell-quote-argument (shell-quote-argument real-file)))))
+            line (shell-quote-argument real-file))))
 
 (defsubst git-messenger:cat-file-command (commit-id)
   (format "git --no-pager cat-file commit %s" commit-id))

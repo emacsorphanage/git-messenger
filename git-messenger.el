@@ -1,10 +1,10 @@
-;;; git-messenger.el --- Port of gitmessenger.vim
+;;; git-messenger.el --- Pop up last commit information of current line
 
 ;; Copyright (C) 2014 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-messenger
-;; Version: 0.07
+;; Version: 0.08
 ;; Package-Requires: ((popup "0.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify

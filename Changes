@@ -1,5 +1,8 @@
 Revision history for git-messenger.el
 
+Revision 0.08  2014/01/17 syohex
+  - Only documentation change
+
 Revision 0.07  2014/01/14 syohex
   - Fix double escaping issue(#13)
     Reported by achitu

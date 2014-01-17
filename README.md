@@ -1,4 +1,5 @@
 # git-messenger.el
+
 `git-messenger.el` is Emacs port of [git-messenger.vim](https://github.com/rhysd/git-messenger.vim).
 
 `git-messenger.el` provides function that popup commit message at current line.

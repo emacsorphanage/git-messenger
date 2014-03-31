@@ -55,6 +55,8 @@
   :type 'hook
   :group 'git-messenger)
 
+(defvar git-messenger:last-message nil)
+
 (defun git-messenger:real-file-name (file)
   (if (not (file-remote-p file))
       file
@@ -119,6 +121,23 @@
   (and (or git-messenger:show-detail current-prefix-arg)
        (not (git-messenger:not-committed-id-p commit-id))))
 
+(defun git-messenger:copy-message ()
+  (interactive)
+  (with-temp-buffer
+    (if (not git-messenger:last-message)
+        (message "no message")
+      (insert git-messenger:last-message)
+      (copy-region-as-kill (point-min) (point-max))))
+  (keyboard-quit))
+
+(defvar git-messenger-map
+  (let ((map (make-sparse-keymap)))
+    ;; key bindings
+    (define-key map (kbd "q") 'keyboard-quit)
+    (define-key map (kbd "M-w") 'git-messenger:copy-message)
+    map)
+  "Key mappings of git-messenger. This is enabled when commit message is popup-ed.")
+
 ;;;###autoload
 (defun git-messenger:popup-message ()
   (interactive)
@@ -132,8 +151,12 @@
          (popuped-message (if (git-messenger:show-detail-p commit-id)
                               (git-messenger:format-detail commit-id author msg remote-p)
                             msg)))
+    (setq git-messenger:last-message popuped-message)
     (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
-    (popup-tip popuped-message)
+    (let ((menu (popup-tip popuped-message :nowait t)))
+      (unwind-protect
+          (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback)
+        (popup-delete menu)))
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 
 (provide 'git-messenger)

@@ -1,5 +1,8 @@
 Revision history for git-messenger.el
 
+Revision 0.09  2014/04/02 syohex
+  - Support key mapping(Thanks stsquad)
+
 Revision 0.08  2014/01/17 syohex
   - Only documentation change
 

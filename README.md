@@ -26,6 +26,17 @@ Date and commit message with `C-u` prefix
 ![git-messenager-detail](image/git-messenger-detail.png)
 
 
+## Key Bindings
+
+You can modify key bindings by customizing `git-messenger-map`.
+
+| Key                  | Command                      |
+|:---------------------|:-----------------------------|
+| `M-w`                | Copy commit message and quit |
+| `c`                  | Copy commit ID and quit      |
+| `q`                  | Quit                         |
+
+
 ## Customize
 
 ### `git-messenger:show-detail`(Default `nil`)
@@ -43,9 +54,24 @@ Run before popup commit message. Hook function take one argument, commit message
 Run after popup commit message. Hook function take one argument, commit message.
 
 
+## Global Variables
+
+You may be able to use these variables useful in commands of `git-messenger-map`.
+
+#### `git-messenger:last-message`
+
+Last popup-ed commit message
+
+#### `git-messenger:last-commit-id`
+
+Last popup-ed commit ID
+
+
 ## Sample Configuration
 
 ```lisp
 (require 'git-messenger) ;; You need not to load if you install with package.el
 (global-set-key (kbd "C-x v p") 'git-messenger:popup-message)
+
+(define-key git-messenger-map (kbd "m") 'git-messenger:copy-message)
 ```

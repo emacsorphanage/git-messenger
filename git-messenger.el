@@ -55,6 +55,18 @@
   :type 'hook
   :group 'git-messenger)
 
+(defvar git-messenger:last-message nil
+  "Last message displayed by git-messenger.
+
+This is set before the pop-up is displayed so accessible in the hooks
+and menus.")
+
+(defvar git-messenger:last-commit-id nil
+  "Last commit id for the last message displayed.
+
+This is set before the pop-up is displayed so accessible in the hooks
+and menus.")
+
 (defun git-messenger:real-file-name (file)
   (if (not (file-remote-p file))
       file
@@ -119,6 +131,29 @@
   (and (or git-messenger:show-detail current-prefix-arg)
        (not (git-messenger:not-committed-id-p commit-id))))
 
+(defun git-messenger:copy-message ()
+  "Copy current displayed commit message to kill-ring."
+  (interactive)
+  (when git-messenger:last-message
+    (kill-new git-messenger:last-message))
+  (keyboard-quit))
+
+(defun git-messenger:copy-commit-id ()
+  "Copy current displayed commit id to kill-ring."
+  (interactive)
+  (when git-messenger:last-commit-id
+    (kill-new git-messenger:last-commit-id))
+  (keyboard-quit))
+
+(defvar git-messenger-map
+  (let ((map (make-sparse-keymap)))
+    ;; key bindings
+    (define-key map (kbd "q") 'keyboard-quit)
+    (define-key map (kbd "c") 'git-messenger:copy-commit-id)
+    (define-key map (kbd "M-w") 'git-messenger:copy-message)
+    map)
+  "Key mappings of git-messenger. This is enabled when commit message is popup-ed.")
+
 ;;;###autoload
 (defun git-messenger:popup-message ()
   (interactive)
@@ -132,8 +167,13 @@
          (popuped-message (if (git-messenger:show-detail-p commit-id)
                               (git-messenger:format-detail commit-id author msg remote-p)
                             msg)))
+    (setq git-messenger:last-message popuped-message
+          git-messenger:last-commit-id commit-id)
     (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
-    (popup-tip popuped-message)
+    (let ((menu (popup-tip popuped-message :nowait t)))
+      (unwind-protect
+          (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback)
+        (popup-delete menu)))
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 
 (provide 'git-messenger)

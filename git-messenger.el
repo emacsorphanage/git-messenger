@@ -55,7 +55,17 @@
   :type 'hook
   :group 'git-messenger)
 
-(defvar git-messenger:last-message nil)
+(defvar git-messenger:last-message nil
+  "Last message displayed by git-messenger.
+
+This is set before the pop-up is displayed so accessible in the hooks
+and menus.")
+
+(defvar git-messenger:last-commit-id nil
+  "Last commit id for the last message displayed.
+
+This is set before the pop-up is displayed so accessible in the hooks
+and menus.")
 
 (defun git-messenger:real-file-name (file)
   (if (not (file-remote-p file))
@@ -122,18 +132,24 @@
        (not (git-messenger:not-committed-id-p commit-id))))
 
 (defun git-messenger:copy-message ()
+  "Copy current displayed commit message to kill-ring."
   (interactive)
-  (with-temp-buffer
-    (if (not git-messenger:last-message)
-        (message "no message")
-      (insert git-messenger:last-message)
-      (copy-region-as-kill (point-min) (point-max))))
+  (when git-messenger:last-message
+    (kill-new git-messenger:last-message))
+  (keyboard-quit))
+
+(defun git-messenger:copy-commit-id ()
+  "Copy current displayed commit id to kill-ring."
+  (interactive)
+  (when git-messenger:last-commit-id
+    (kill-new git-messenger:last-commit-id))
   (keyboard-quit))
 
 (defvar git-messenger-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
     (define-key map (kbd "q") 'keyboard-quit)
+    (define-key map (kbd "c") 'git-messenger:copy-commit-id)
     (define-key map (kbd "M-w") 'git-messenger:copy-message)
     map)
   "Key mappings of git-messenger. This is enabled when commit message is popup-ed.")
@@ -151,7 +167,8 @@
          (popuped-message (if (git-messenger:show-detail-p commit-id)
                               (git-messenger:format-detail commit-id author msg remote-p)
                             msg)))
-    (setq git-messenger:last-message popuped-message)
+    (setq git-messenger:last-message popuped-message
+          git-messenger:last-commit-id commit-id)
     (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
     (let ((menu (popup-tip popuped-message :nowait t)))
       (unwind-protect

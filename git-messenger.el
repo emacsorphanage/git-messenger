@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-messenger
-;; Version: 0.09
+;; Version: 0.10
 ;; Package-Requires: ((popup "0.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify

@@ -161,17 +161,20 @@ and menus.")
 
 (defun git-messenger:popup-diff ()
   (interactive)
-  (let ((cmd (format "git diff %s^!" git-messenger:last-commit-id)))
+  (let ((cmd (format "git --no-pager diff --no-ext-diff %s^!"
+                     git-messenger:last-commit-id)))
     (git-messenger:popup-common cmd 'diff-mode)))
 
 (defun git-messenger:popup-show ()
   (interactive)
-  (let ((cmd (concat "git show --stat " git-messenger:last-commit-id)))
+  (let ((cmd (concat "git --no-pager show --no-ext-diff --stat "
+                     git-messenger:last-commit-id)))
     (git-messenger:popup-common cmd)))
 
 (defun git-messenger:popup-show-verbose ()
   (interactive)
-  (let ((cmd (concat "git show --stat -p " git-messenger:last-commit-id)))
+  (let ((cmd (concat "git --no-pager show --no-ext-diff --stat -p "
+                     git-messenger:last-commit-id)))
     (git-messenger:popup-common cmd)))
 
 (defvar git-messenger-map

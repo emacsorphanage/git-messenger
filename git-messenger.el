@@ -145,11 +145,42 @@ and menus.")
     (kill-new git-messenger:last-commit-id))
   (keyboard-quit))
 
+(defun git-messenger:popup-common (cmd &optional mode)
+  (with-current-buffer (get-buffer-create "*git-messenger*")
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (unless (zerop (call-process-shell-command cmd nil t))
+      (error "Failed: '%s'" cmd))
+    (pop-to-buffer (current-buffer))
+    (when mode
+      (funcall mode))
+    (setq buffer-read-only t)
+    (goto-char (point-min)))
+  (keyboard-quit))
+
+(defun git-messenger:popup-diff ()
+  (interactive)
+  (let ((cmd (format "git diff %s^!" git-messenger:last-commit-id)))
+    (git-messenger:popup-common cmd 'diff-mode)))
+
+(defun git-messenger:popup-show ()
+  (interactive)
+  (let ((cmd (concat "git show --stat " git-messenger:last-commit-id)))
+    (git-messenger:popup-common cmd)))
+
+(defun git-messenger:popup-show-verbose ()
+  (interactive)
+  (let ((cmd (concat "git show --stat -p " git-messenger:last-commit-id)))
+    (git-messenger:popup-common cmd)))
+
 (defvar git-messenger-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
     (define-key map (kbd "q") 'keyboard-quit)
     (define-key map (kbd "c") 'git-messenger:copy-commit-id)
+    (define-key map (kbd "d") 'git-messenger:popup-diff)
+    (define-key map (kbd "s") 'git-messenger:popup-show)
+    (define-key map (kbd "S") 'git-messenger:popup-show-verbose)
     (define-key map (kbd "M-w") 'git-messenger:copy-message)
     map)
   "Key mappings of git-messenger. This is enabled when commit message is popup-ed.")

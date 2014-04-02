@@ -30,11 +30,14 @@ Date and commit message with `C-u` prefix
 
 You can modify key bindings by customizing `git-messenger-map`.
 
-| Key                  | Command                      |
-|:---------------------|:-----------------------------|
-| `M-w`                | Copy commit message and quit |
-| `c`                  | Copy commit ID and quit      |
-| `q`                  | Quit                         |
+| Key                  | Command                                                 |
+|:--------------------:|:--------------------------------------------------------|
+| `M-w`                | Copy commit message and quit                            |
+| `c`                  | Copy commit ID and quit                                 |
+| `d`                  | Pop up `git diff` of last change of this line           |
+| `s`                  | Pop up `git show --stat` of last change of this line    |
+| `S`                  | Pop up `git show --stat -p` of last change of this line |
+| `q`                  | Quit                                                    |
 
 
 ## Customize

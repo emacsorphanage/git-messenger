@@ -34,7 +34,7 @@
 ;;; Code:
 
 (require 'popup)
-(require 'tramp)
+(declare-function tramp-dissect-file-name "tramp")
 
 (defgroup git-messenger nil
   "git messenger"
@@ -80,15 +80,13 @@ and menus.")
 (defsubst git-messenger:cat-file-command (commit-id)
   (format "git --no-pager cat-file commit %s" commit-id))
 
-(defun git-messenger:execute-command (cmd remote)
-  (if (not remote)
-      (call-process-shell-command cmd nil t)
-    (process-file-shell-command cmd nil t)))
+(defsubst git-messenger:execute-command (cmd)
+  (process-file-shell-command cmd nil t))
 
-(defun git-messenger:commit-info-at-line (file line remote-p)
+(defun git-messenger:commit-info-at-line (file line)
   (with-temp-buffer
     (let ((cmd (git-messenger:blame-command file line)))
-      (unless (zerop (git-messenger:execute-command cmd remote-p))
+      (unless (zerop (git-messenger:execute-command cmd))
         (error "Failed: %s" cmd))
       (goto-char (point-min))
       (let* ((id-line (buffer-substring-no-properties
@@ -102,28 +100,28 @@ and menus.")
 (defsubst git-messenger:not-committed-id-p (commit-id)
   (string-match-p "\\`0+\\'" commit-id))
 
-(defun git-messenger:commit-message (commit-id remote-p)
+(defun git-messenger:commit-message (commit-id)
   (with-temp-buffer
     (if (git-messenger:not-committed-id-p commit-id)
         "* not yet committed *"
       (let ((cmd (git-messenger:cat-file-command commit-id)))
-        (unless (zerop (git-messenger:execute-command cmd remote-p))
+        (unless (zerop (git-messenger:execute-command cmd))
           (error "Failed: %s" cmd))
         (goto-char (point-min))
         (forward-paragraph)
         (buffer-substring-no-properties (point) (point-max))))))
 
-(defun git-messenger:commit-date (commit-id remote-p)
+(defun git-messenger:commit-date (commit-id)
   (let ((cmd (format "git --no-pager show --pretty=%%cd %s" commit-id)))
     (with-temp-buffer
-      (unless (zerop (git-messenger:execute-command cmd remote-p))
+      (unless (zerop (git-messenger:execute-command cmd))
         (error "Failed %s" cmd))
       (goto-char (point-min))
       (buffer-substring-no-properties
        (line-beginning-position) (line-end-position)))))
 
-(defun git-messenger:format-detail (commit-id author message remote-p)
-  (let ((date (git-messenger:commit-date commit-id remote-p)))
+(defun git-messenger:format-detail (commit-id author message)
+  (let ((date (git-messenger:commit-date commit-id)))
     (format "commit : %s \nAuthor : %s\nDate   : %s \n%s"
             (substring commit-id 0 8) author date message)))
 
@@ -193,14 +191,13 @@ and menus.")
 (defun git-messenger:popup-message ()
   (interactive)
   (let* ((file (buffer-file-name (buffer-base-buffer)))
-         (remote-p (file-remote-p file))
          (line (line-number-at-pos))
-         (commit-info (git-messenger:commit-info-at-line file line remote-p))
+         (commit-info (git-messenger:commit-info-at-line file line))
          (commit-id (car commit-info))
          (author (cdr commit-info))
-         (msg (git-messenger:commit-message commit-id remote-p))
+         (msg (git-messenger:commit-message commit-id))
          (popuped-message (if (git-messenger:show-detail-p commit-id)
-                              (git-messenger:format-detail commit-id author msg remote-p)
+                              (git-messenger:format-detail commit-id author msg)
                             msg)))
     (setq git-messenger:last-message popuped-message
           git-messenger:last-commit-id commit-id)

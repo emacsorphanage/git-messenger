@@ -6,9 +6,15 @@
 This is useful when you want to know why this line was changed.
 
 
-## screenshot
+## Screenshot
 
 ![git-messenger.el](image/git-messenger.png)
+
+
+## Installation
+
+You can install `git-messenger.el` from [MELPA](https://github.com/milkypostman/melpa.git) with package.el
+(`M-x package-install git-messenger`).
 
 
 ## Dependency

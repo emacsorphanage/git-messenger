@@ -34,7 +34,6 @@
 ;;; Code:
 
 (require 'popup)
-(declare-function tramp-dissect-file-name "tramp")
 
 (defgroup git-messenger nil
   "git messenger"
@@ -67,27 +66,22 @@ and menus.")
 This is set before the pop-up is displayed so accessible in the hooks
 and menus.")
 
-(defun git-messenger:real-file-name (file)
-  (if (not (file-remote-p file))
-      file
-    (aref (tramp-dissect-file-name file) 3)))
+(defun git-messenger:blame-arguments (file line)
+  (list "--no-pager" "blame" "-w" "-L"
+        (format "%d,+1" line)
+        "--porcelain" (file-name-nondirectory file)))
 
-(defun git-messenger:blame-command (file line)
-  (let ((real-file (git-messenger:real-file-name file)))
-    (format "git --no-pager blame -w -L %d,+1 --porcelain %s"
-            line (shell-quote-argument real-file))))
+(defsubst git-messenger:cat-file-arguments (commit-id)
+  (list "--no-pager" "cat-file" "commit" commit-id))
 
-(defsubst git-messenger:cat-file-command (commit-id)
-  (format "git --no-pager cat-file commit %s" commit-id))
-
-(defsubst git-messenger:execute-command (cmd)
-  (process-file-shell-command cmd nil t))
+(defsubst git-messenger:execute-command (cmd args output)
+  (apply 'process-file cmd nil output nil args))
 
 (defun git-messenger:commit-info-at-line (file line)
   (with-temp-buffer
-    (let ((cmd (git-messenger:blame-command file line)))
-      (unless (zerop (git-messenger:execute-command cmd))
-        (error "Failed: %s" cmd))
+    (let ((args (git-messenger:blame-arguments file line)))
+      (unless (zerop (git-messenger:execute-command "git" args t))
+        (error "Failed: 'git blame'"))
       (goto-char (point-min))
       (let* ((id-line (buffer-substring-no-properties
                        (line-beginning-position) (line-end-position)))
@@ -104,18 +98,18 @@ and menus.")
   (with-temp-buffer
     (if (git-messenger:not-committed-id-p commit-id)
         "* not yet committed *"
-      (let ((cmd (git-messenger:cat-file-command commit-id)))
-        (unless (zerop (git-messenger:execute-command cmd))
-          (error "Failed: %s" cmd))
+      (let ((args (git-messenger:cat-file-arguments commit-id)))
+        (unless (zerop (git-messenger:execute-command "git" args t))
+          (error "Failed: 'git cat-file'"))
         (goto-char (point-min))
         (forward-paragraph)
         (buffer-substring-no-properties (point) (point-max))))))
 
 (defun git-messenger:commit-date (commit-id)
-  (let ((cmd (format "git --no-pager show --pretty=%%cd %s" commit-id)))
+  (let ((args (list "--no-pager" "show" "--pretty=%cd" commit-id)))
     (with-temp-buffer
-      (unless (zerop (git-messenger:execute-command cmd))
-        (error "Failed %s" cmd))
+      (unless (zerop (git-messenger:execute-command "git" args t))
+        (error "Failed 'git show'"))
       (goto-char (point-min))
       (buffer-substring-no-properties
        (line-beginning-position) (line-end-position)))))
@@ -143,12 +137,12 @@ and menus.")
     (kill-new git-messenger:last-commit-id))
   (keyboard-quit))
 
-(defun git-messenger:popup-common (cmd &optional mode)
+(defun git-messenger:popup-common (cmd args &optional mode)
   (with-current-buffer (get-buffer-create "*git-messenger*")
     (setq buffer-read-only nil)
     (fundamental-mode)
     (erase-buffer)
-    (unless (zerop (call-process-shell-command cmd nil t))
+    (unless (zerop (git-messenger:execute-command cmd args t))
       (error "Failed: '%s'" cmd))
     (pop-to-buffer (current-buffer))
     (when mode
@@ -159,21 +153,21 @@ and menus.")
 
 (defun git-messenger:popup-diff ()
   (interactive)
-  (let ((cmd (format "git --no-pager diff --no-ext-diff %s^!"
-                     git-messenger:last-commit-id)))
-    (git-messenger:popup-common cmd 'diff-mode)))
+  (let ((args (list "--no-pager" "diff" "--no-ext-diff"
+                    (concat git-messenger:last-commit-id "^!"))))
+    (git-messenger:popup-common "git" args 'diff-mode)))
 
 (defun git-messenger:popup-show ()
   (interactive)
-  (let ((cmd (concat "git --no-pager show --no-ext-diff --stat "
-                     git-messenger:last-commit-id)))
-    (git-messenger:popup-common cmd)))
+  (let ((args (list "--no-pager" "show" "--no-ext-diff" "--stat"
+                    git-messenger:last-commit-id)))
+    (git-messenger:popup-common "git" args)))
 
 (defun git-messenger:popup-show-verbose ()
   (interactive)
-  (let ((cmd (concat "git --no-pager show --no-ext-diff --stat -p "
-                     git-messenger:last-commit-id)))
-    (git-messenger:popup-common cmd)))
+  (let ((args (list "--no-pager" "show" "--no-ext-diff" "--stat" "-p"
+                    git-messenger:last-commit-id)))
+    (git-messenger:popup-common "git" args)))
 
 (defvar git-messenger-map
   (let ((map (make-sparse-keymap)))

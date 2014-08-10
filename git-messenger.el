@@ -41,7 +41,7 @@
 
 (defcustom git-messenger:show-detail nil
   "Pop up commit ID and author name too"
-  :type 'bool
+  :type 'boolean
   :group 'git-messenger)
 
 (defcustom git-messenger:before-popup-hook nil

@@ -123,19 +123,23 @@ and menus.")
   (and (or git-messenger:show-detail current-prefix-arg)
        (not (git-messenger:not-committed-id-p commit-id))))
 
+(defun git-messenger:popup-close ()
+  (interactive)
+  (throw 'git-messenger-quit "Delete popup window"))
+
 (defun git-messenger:copy-message ()
   "Copy current displayed commit message to kill-ring."
   (interactive)
   (when git-messenger:last-message
     (kill-new git-messenger:last-message))
-  (keyboard-quit))
+  (git-messenger:popup-close))
 
 (defun git-messenger:copy-commit-id ()
   "Copy current displayed commit id to kill-ring."
   (interactive)
   (when git-messenger:last-commit-id
     (kill-new git-messenger:last-commit-id))
-  (keyboard-quit))
+  (git-messenger:popup-close))
 
 (defun git-messenger:popup-common (cmd args &optional mode)
   (with-current-buffer (get-buffer-create "*git-messenger*")
@@ -149,7 +153,7 @@ and menus.")
       (funcall mode))
     (setq buffer-read-only t)
     (goto-char (point-min)))
-  (keyboard-quit))
+  (git-messenger:popup-close))
 
 (defun git-messenger:popup-diff ()
   (interactive)
@@ -172,7 +176,7 @@ and menus.")
 (defvar git-messenger-map
   (let ((map (make-sparse-keymap)))
     ;; key bindings
-    (define-key map (kbd "q") 'keyboard-quit)
+    (define-key map (kbd "q") 'git-messenger:popup-close)
     (define-key map (kbd "c") 'git-messenger:copy-commit-id)
     (define-key map (kbd "d") 'git-messenger:popup-diff)
     (define-key map (kbd "s") 'git-messenger:popup-show)
@@ -198,7 +202,8 @@ and menus.")
     (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
     (let ((menu (popup-tip popuped-message :nowait t)))
       (unwind-protect
-          (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback)
+          (catch 'git-messenger-quit
+            (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback))
         (popup-delete menu)))
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 

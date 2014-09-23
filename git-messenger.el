@@ -45,12 +45,17 @@
   :group 'git-messenger)
 
 (defcustom git-messenger:before-popup-hook nil
-  "hook run before popup commit message. This hook is taken popup-ed message"
+  "Hook run before popup commit message. This hook is taken popup-ed message"
   :type 'hook
   :group 'git-messenger)
 
 (defcustom git-messenger:after-popup-hook nil
-  "hook run after popup commit message. This hook is taken popup-ed message"
+  "Hook run after popup commit message. This hook is taken popup-ed message"
+  :type 'hook
+  :group 'git-messenger)
+
+(defcustom git-messenger:popup-buffer-hook nil
+  "Hook run after popup buffer(popup diff, popup show etc)"
   :type 'hook
   :group 'git-messenger)
 
@@ -152,7 +157,8 @@ and menus.")
     (when mode
       (funcall mode))
     (setq buffer-read-only t)
-    (goto-char (point-min)))
+    (goto-char (point-min))
+    (run-hooks 'git-messenger:popup-buffer-hook))
   (git-messenger:popup-close))
 
 (defun git-messenger:popup-diff ()

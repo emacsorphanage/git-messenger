@@ -156,9 +156,9 @@ and menus.")
     (pop-to-buffer (current-buffer))
     (when mode
       (funcall mode))
+    (run-hooks 'git-messenger:popup-buffer-hook)
     (setq buffer-read-only t)
-    (goto-char (point-min))
-    (run-hooks 'git-messenger:popup-buffer-hook))
+    (goto-char (point-min)))
   (git-messenger:popup-close))
 
 (defun git-messenger:popup-diff ()

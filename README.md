@@ -62,6 +62,10 @@ Run before popup commit message. Hook function take one argument, commit message
 
 Run after popup commit message. Hook function take one argument, commit message.
 
+### `git-messenger:popup-buffer-hook`
+
+Run after popup buffer.
+
 
 ## Global Variables
 

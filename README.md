@@ -106,6 +106,6 @@ Last popup-ed commit ID
 ```
 
 [melpa-link]: http://melpa.org/#/git-messenger
-[melpa-stable-link]: http://melpa.org/#/git-messenger
+[melpa-stable-link]: http://stable.melpa.org/#/git-messenger
 [melpa-badge]: http://melpa.org/packages/git-messenger-badge.svg
 [melpa-stable-badge]: http://stable.melpa.org/packages/git-messenger-badge.svg

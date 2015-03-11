@@ -114,8 +114,9 @@ and menus.")
 
 (defun git-messenger:svn-commit-info-at-line (line)
   (forward-line (1- line))
-  (when (looking-at "^\\s-*\\([0-9]+\\)\\s-+\\(\\S-+\\)")
-    (cons (match-string-no-properties 1) (match-string-no-properties 2))))
+  (if (looking-at "^\\s-*\\([0-9]+\\)\\s-+\\(\\S-+\\)")
+      (cons (match-string-no-properties 1) (match-string-no-properties 2))
+    (cons "-" "-")))
 
 (defun git-messenger:commit-info-at-line (vcs file line)
   (with-temp-buffer
@@ -128,7 +129,7 @@ and menus.")
         (svn (git-messenger:svn-commit-info-at-line line))))))
 
 (defsubst git-messenger:not-committed-id-p (commit-id)
-  (string-match-p "\\`0+\\'" commit-id))
+  (or (string-match-p "\\`\\(?:0+\\|-\\)\\'" commit-id)))
 
 (defun git-messenger:git-commit-message (commit-id)
   (let ((args (git-messenger:cat-file-arguments commit-id)))
@@ -291,7 +292,9 @@ and menus.")
                               (git-messenger:format-detail vcs commit-id author msg)
                             (cl-case vcs
                               (git msg)
-                              (svn (git-messenger:svn-message msg))))))
+                              (svn (if (string= commit-id "-")
+                                       msg
+                                     (git-messenger:svn-message msg)))))))
     (setq git-messenger:vcs vcs
           git-messenger:last-message popuped-message
           git-messenger:last-commit-id commit-id)

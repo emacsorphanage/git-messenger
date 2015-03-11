@@ -1,4 +1,4 @@
-# git-messenger.el
+# git-messenger.el [![melpa badge][melpa-badge]][melpa-link] [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
 
 `git-messenger.el` is Emacs port of [git-messenger.vim](https://github.com/rhysd/git-messenger.vim).
 
@@ -104,3 +104,8 @@ Last popup-ed commit ID
 ;; Enable magit-commit-mode after typing 's', 'S', 'd'
 (add-hook 'git-messenger:popup-buffer-hook 'magit-commit-mode)
 ```
+
+[melpa-link]: http://melpa.org/#/git-messenger
+[melpa-stable-link]: http://melpa.org/#/git-messenger
+[melpa-badge]: http://melpa.org/packages/git-messenger-badge.svg
+[melpa-stable-badge]: http://stable.melpa.org/packages/git-messenger-badge.svg

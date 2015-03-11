@@ -216,7 +216,7 @@ and menus.")
     (fundamental-mode)
     (erase-buffer)
     (unless (zerop (git-messenger:execute-command vcs args t))
-      (error "Failed: '%s'" cmd))
+      (error "Failed: '%s(args=%s)'" (git-messenger:vcs-command vcs) args))
     (pop-to-buffer (current-buffer))
     (when mode
       (funcall mode))

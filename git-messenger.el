@@ -177,13 +177,13 @@ and menus.")
            (goto-char (point-min))
            (forward-line 1)
            (let ((line (buffer-substring-no-properties (point) (line-end-position)))
-                 (re "^\\s-*\\(?:r[0-9]+\\)\\s-+|\\s-+\\([^|]+\\)\\|\\s-+\\([^|]+\\)"))
+                 (re "^\\s-*\\(?:r[0-9]+\\)\\s-+|\\s-+\\([^|]+\\)|\\s-+\\([^|]+\\)"))
              (unless (string-match re line)
                (error "Can't get revision %s" line))
              (let ((author (match-string-no-properties 1 line))
                    (date (match-string-no-properties 2 line)))
                (forward-paragraph)
-               (format "commit : r%s\nAuthor : %s\nDate  : %s\n%s"
+               (format "commit : r%s \nAuthor : %s\nDate  : %s\n%s"
                        commit-id author date
                        (buffer-substring-no-properties (point) (point-max)))))))))
 

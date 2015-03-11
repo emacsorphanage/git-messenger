@@ -183,7 +183,7 @@ and menus.")
              (let ((author (match-string-no-properties 1 line))
                    (date (match-string-no-properties 2 line)))
                (forward-paragraph)
-               (format "commit : r%s\nAuthor : %s\nData  : %s\n%s"
+               (format "commit : r%s\nAuthor : %s\nDate  : %s\n%s"
                        commit-id author date
                        (buffer-substring-no-properties (point) (point-max)))))))))
 

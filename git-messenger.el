@@ -61,7 +61,9 @@
   :group 'git-messenger)
 
 (defcustom git-messenger:handled-backends '(git svn)
-  "List of version control backends for which `git-messenger' will be used."
+  "List of version control backends for which `git-messenger' will be used.
+Entries in this list will be tried in order to determine whether a
+file is under that sort of version control."
   :type '(repeat symbol)
   :group 'git-messenger)
 

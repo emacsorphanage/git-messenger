@@ -20,6 +20,13 @@ You can install `git-messenger.el` from [MELPA](https://github.com/milkypostman/
 ## Dependency
 
 * [popup](https://github.com/auto-complete/popup-el)
+* [cl-lib](http://elpa.gnu.org/packages/cl-lib.html)
+
+
+## Supported VCS
+
+- Git
+- Subversion
 
 
 ## Commands
@@ -51,6 +58,12 @@ You can modify key bindings by customizing `git-messenger-map`.
 ### `git-messenger:show-detail`(Default `nil`)
 
 Always show detail message if this value is `t`.
+
+### `git-messenger:handled-backends`(Default `'(git svn)`)
+
+Handled VCS which `git-messenger` uses.
+Entries in this list will be tried in order to determine whether a
+file is under that sort of version control.
 
 ## Hooks
 

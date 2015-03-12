@@ -86,11 +86,12 @@ and menus.")
     (svn . ".svn")))
 
 (defun git-messenger:blame-arguments (vcs file line)
-  (cl-case vcs
-    (git (list "--no-pager" "blame" "-w" "-L"
-               (format "%d,+1" line)
-               "--porcelain" (file-name-nondirectory file)))
-    (svn (list "blame" file))))
+  (let ((basename (file-name-nondirectory file)))
+    (cl-case vcs
+      (git (list "--no-pager" "blame" "-w" "-L"
+                 (format "%d,+1" line)
+                 "--porcelain" basename))
+      (svn (list "blame" basename)))))
 
 (defsubst git-messenger:cat-file-arguments (commit-id)
   (list "--no-pager" "cat-file" "commit" commit-id))

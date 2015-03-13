@@ -102,7 +102,11 @@ and menus.")
     (svn "svn")))
 
 (defun git-messenger:execute-command (vcs args output)
-  (apply 'process-file (git-messenger:vcs-command vcs) nil output nil args))
+  (cl-case vcs
+    (git (apply 'process-file "git" nil output nil args))
+    (svn
+     (let ((process-environment (cons "LANG=C" process-environment)))
+       (apply 'process-file "svn" nil output nil args)))))
 
 (defun git-messenger:git-commit-info-at-line ()
   (let* ((id-line (buffer-substring-no-properties

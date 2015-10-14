@@ -105,7 +105,7 @@ Last popup-ed commit ID
 (add-hook 'git-messenger:popup-buffer-hook 'magit-commit-mode)
 ```
 
-[melpa-link]: http://melpa.org/#/git-messenger
-[melpa-stable-link]: http://stable.melpa.org/#/git-messenger
-[melpa-badge]: http://melpa.org/packages/git-messenger-badge.svg
-[melpa-stable-badge]: http://stable.melpa.org/packages/git-messenger-badge.svg
+[melpa-link]: https://melpa.org/#/git-messenger
+[melpa-stable-link]: https://stable.melpa.org/#/git-messenger
+[melpa-badge]: https://melpa.org/packages/git-messenger-badge.svg
+[melpa-stable-badge]: https://stable.melpa.org/packages/git-messenger-badge.svg

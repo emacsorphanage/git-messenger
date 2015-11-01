@@ -13,8 +13,11 @@ This is useful when you want to know why this line was changed.
 
 ## Installation
 
-You can install `git-messenger.el` from [MELPA](https://github.com/milkypostman/melpa.git) with package.el
-(`M-x package-install git-messenger`).
+`git-messenger` is available on [MELPA](https://melpa.org/) and [MELPA stable](https://stable.melpa.org/)
+
+You can install `git-messenger` with the following command.
+
+<kbd>M-x package-install [RET] git-messenger [RET]</kbd>
 
 
 ## Dependency

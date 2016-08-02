@@ -56,7 +56,7 @@
   "Hook run after popup buffer(popup diff, popup show etc)"
   :type 'hook)
 
-(defcustom git-messenger:handled-backends '(git svn)
+(defcustom git-messenger:handled-backends '(git svn hg)
   "List of version control backends for which `git-messenger' will be used.
 Entries in this list will be tried in order to determine whether a
 file is under that sort of version control."
@@ -78,7 +78,8 @@ and menus.")
 
 (defconst git-messenger:directory-of-vcs
   '((git . ".git")
-    (svn . ".svn")))
+    (svn . ".svn")
+    (hg . ".hg")))
 
 (defun git-messenger:blame-arguments (vcs file line)
   (let ((basename (file-name-nondirectory file)))
@@ -86,7 +87,8 @@ and menus.")
       (git (list "--no-pager" "blame" "-w" "-L"
                  (format "%d,+1" line)
                  "--porcelain" basename))
-      (svn (list "blame" basename)))))
+      (svn (list "blame" basename))
+      (hg (list "blame" "-wuc" basename)))))
 
 (defsubst git-messenger:cat-file-arguments (commit-id)
   (list "--no-pager" "cat-file" "commit" commit-id))
@@ -94,14 +96,20 @@ and menus.")
 (defsubst git-messenger:vcs-command (vcs)
   (cl-case vcs
     (git "git")
-    (svn "svn")))
+    (svn "svn")
+    (hg "hg")))
 
 (defun git-messenger:execute-command (vcs args output)
   (cl-case vcs
     (git (apply 'process-file "git" nil output nil args))
     (svn
      (let ((process-environment (cons "LANG=C" process-environment)))
-       (apply 'process-file "svn" nil output nil args)))))
+       (apply 'process-file "svn" nil output nil args)))
+    (hg
+     (let ((process-environment (cons
+                                 "HGPLAIN=1"
+                                 (cons "LANG=utf-8" process-environment))))
+       (apply 'process-file "hg" nil output nil args)))))
 
 (defun git-messenger:git-commit-info-at-line ()
   (let* ((id-line (buffer-substring-no-properties
@@ -111,6 +119,12 @@ and menus.")
                      (match-string-no-properties 1)
                    "unknown")))
     (cons commit-id author)))
+
+(defun git-messenger:hg-commit-info-at-line (line)
+  (forward-line (1- line))
+  (if (looking-at "^\\s-*\\(\\S-+\\)\\s-+\\([a-z0-9]+\\)")
+      (cons (match-string-no-properties 2) (match-string-no-properties 1))
+    (cons "-" "-")))
 
 (defun git-messenger:svn-commit-info-at-line (line)
   (forward-line (1- line))
@@ -126,7 +140,8 @@ and menus.")
       (goto-char (point-min))
       (cl-case vcs
         (git (git-messenger:git-commit-info-at-line))
-        (svn (git-messenger:svn-commit-info-at-line line))))))
+        (svn (git-messenger:svn-commit-info-at-line line))
+        (hg (git-messenger:hg-commit-info-at-line line))))))
 
 (defsubst git-messenger:not-committed-id-p (commit-id)
   (or (string-match-p "\\`\\(?:0+\\|-\\)\\'" commit-id)))
@@ -138,6 +153,12 @@ and menus.")
     (goto-char (point-min))
     (forward-paragraph)
     (buffer-substring-no-properties (point) (point-max))))
+
+(defun git-messenger:hg-commit-message (commit-id)
+  (let ((args (list "log" "-T" "{desc}" "-r" commit-id)))
+    (unless (zerop (git-messenger:execute-command 'hg args t))
+      (error "Failed: 'hg log"))
+    (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun git-messenger:svn-commit-message (commit-id)
   (let ((args (list "log" "-c" commit-id)))
@@ -155,7 +176,8 @@ and menus.")
         "* not yet committed *"
       (cl-case vcs
         (git (git-messenger:git-commit-message commit-id))
-        (svn (git-messenger:svn-commit-message commit-id))))))
+        (svn (git-messenger:svn-commit-message commit-id))
+        (hg (git-messenger:hg-commit-message commit-id))))))
 
 (defun git-messenger:commit-date (commit-id)
   (let ((args (list "--no-pager" "show" "--pretty=%cd" commit-id)))
@@ -166,11 +188,23 @@ and menus.")
       (buffer-substring-no-properties
        (line-beginning-position) (line-end-position)))))
 
+(defun git-messenger:hg-commit-date (commit-id)
+  (let ((args (list "log" "-T" "{date|rfc822date}" "-r" commit-id)))
+    (with-temp-buffer
+      (unless (zerop (git-messenger:execute-command 'hg args t))
+        (error "Failed 'hg log'"))
+      (goto-char (point-min))
+      (buffer-substring-no-properties
+       (line-beginning-position) (line-end-position)))))
+
 (defun git-messenger:format-detail (vcs commit-id author message)
   (cl-case vcs
     (git (let ((date (git-messenger:commit-date commit-id)))
            (format "commit : %s \nAuthor : %s\nDate   : %s \n%s"
                    (substring commit-id 0 8) author date message)))
+    (hg (let ((date (git-messenger:hg-commit-date commit-id)))
+           (format "commit : %s \nAuthor : %s\nDate   : %s \n%s"
+                   commit-id author date message)))
     (svn (with-temp-buffer
            (insert message)
            (goto-char (point-min))
@@ -227,13 +261,18 @@ and menus.")
   (git-messenger:popup-common
    'svn (list "diff" "-c" git-messenger:last-commit-id) 'diff-mode))
 
+(defun git-messenger:popup-hg-show ()
+  (git-messenger:popup-common
+   'hg (list "diff" "-c" git-messenger:last-commit-id) 'diff-mode))
+
 (defun git-messenger:popup-diff ()
   (interactive)
   (cl-case git-messenger:vcs
     (git (let ((args (list "--no-pager" "diff" "--no-ext-diff"
                            (concat git-messenger:last-commit-id "^!"))))
            (git-messenger:popup-common 'git args 'diff-mode)))
-    (svn (git-messenger:popup-svn-show))))
+    (svn (git-messenger:popup-svn-show))
+    (hg (git-messenger:popup-hg-show))))
 
 (defun git-messenger:popup-show ()
   (interactive)
@@ -241,7 +280,10 @@ and menus.")
     (git (let ((args (list "--no-pager" "show" "--no-ext-diff" "--stat"
                            git-messenger:last-commit-id)))
            (git-messenger:popup-common 'git args)))
-    (svn (git-messenger:popup-svn-show))))
+    (svn (git-messenger:popup-svn-show))
+    (hg (let ((args (list "log" "--stat" "-r"
+                           git-messenger:last-commit-id)))
+           (git-messenger:popup-common 'hg args)))))
 
 (defun git-messenger:popup-show-verbose ()
   (interactive)
@@ -249,7 +291,10 @@ and menus.")
     (git (let ((args (list "--no-pager" "show" "--no-ext-diff" "--stat" "-p"
                            git-messenger:last-commit-id)))
            (git-messenger:popup-common 'git args)))
-    (svn (error "'svn' does not support `popup-show-verbose'"))))
+    (svn (error "'svn' does not support `popup-show-verbose'"))
+    (hg (let ((args (list "log" "-p" "--stat" "-r"
+                           git-messenger:last-commit-id)))
+           (git-messenger:popup-common 'hg args)))))
 
 (defvar git-messenger-map
   (let ((map (make-sparse-keymap)))
@@ -292,7 +337,8 @@ and menus.")
                               (git msg)
                               (svn (if (string= commit-id "-")
                                        msg
-                                     (git-messenger:svn-message msg)))))))
+                                     (git-messenger:svn-message msg)))
+                              (hg msg)))))
     (setq git-messenger:vcs vcs
           git-messenger:last-message popuped-message
           git-messenger:last-commit-id commit-id)

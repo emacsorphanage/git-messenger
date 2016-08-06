@@ -309,10 +309,14 @@ and menus.")
   "Key mappings of git-messenger. This is enabled when commit message is popup-ed.")
 
 (defun git-messenger:find-vcs ()
-  (cl-loop for vcs in git-messenger:handled-backends
-           for dir = (assoc-default vcs git-messenger:directory-of-vcs)
-           when (locate-dominating-file default-directory dir)
-           return vcs))
+  (let ((longest 0)
+        result)
+    (dolist (vcs git-messenger:handled-backends result)
+      (let* ((dir (assoc-default vcs git-messenger:directory-of-vcs))
+             (vcs-root (locate-dominating-file default-directory dir)))
+        (when (and vcs-root (> (length vcs-root) longest))
+          (setq longest (length vcs-root)
+                result vcs))))))
 
 (defun git-messenger:svn-message (msg)
   (with-temp-buffer

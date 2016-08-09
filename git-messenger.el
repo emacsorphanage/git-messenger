@@ -325,6 +325,24 @@ and menus.")
     (forward-paragraph)
     (buffer-substring-no-properties (point) (point-max))))
 
+(defvar git-messenger:func-prompt
+  '((git-messenger:popup-show . "Show")
+    (git-messenger:popup-show-verbose . "Show verbose")
+    (git-messenger:popup-close . "Close")
+    (git-messenger:copy-commit-id . "Copy hash")
+    (git-messenger:popup-diff . "Diff")
+    (git-messenger:copy-message . "Copy message")
+    (git-messenger:popup-close . "Quit")))
+
+(defsubst git-messenger:function-to-key (func)
+  (key-description (car-safe (where-is-internal func git-messenger-map))))
+
+(defun git-messenger:prompt ()
+  (mapconcat (lambda (fp)
+               (let ((key (git-messenger:function-to-key (car fp))))
+                 (format "[%s]%s" key (cdr fp))))
+             git-messenger:func-prompt " "))
+
 ;;;###autoload
 (defun git-messenger:popup-message ()
   (interactive)
@@ -350,7 +368,8 @@ and menus.")
     (let ((menu (popup-tip popuped-message :nowait t)))
       (unwind-protect
           (catch 'git-messenger-quit
-            (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback))
+            (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback
+                                   :prompt (git-messenger:prompt)))
         (popup-delete menu)))
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 

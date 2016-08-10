@@ -30,6 +30,7 @@ You can install `git-messenger` with the following command.
 
 - Git
 - Subversion
+- Mercurial
 
 
 ## Commands

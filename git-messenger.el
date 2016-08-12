@@ -226,7 +226,7 @@ and menus.")
 
 (defun git-messenger:popup-close ()
   (interactive)
-  (throw 'git-messenger-quit "Delete popup window"))
+  (throw 'git-messenger-loop t))
 
 (defun git-messenger:copy-message ()
   "Copy current displayed commit message to kill-ring."
@@ -305,6 +305,7 @@ and menus.")
     (define-key map (kbd "s") 'git-messenger:popup-show)
     (define-key map (kbd "S") 'git-messenger:popup-show-verbose)
     (define-key map (kbd "M-w") 'git-messenger:copy-message)
+    (define-key map (kbd ",") 'git-messenger:show-parent)
     map)
   "Key mappings of git-messenger. This is enabled when commit message is popup-ed.")
 
@@ -332,6 +333,7 @@ and menus.")
     (git-messenger:copy-commit-id . "Copy hash")
     (git-messenger:popup-diff . "Diff")
     (git-messenger:copy-message . "Copy message")
+    (git-messenger:show-parent . "Go Parent")
     (git-messenger:popup-close . "Quit")))
 
 (defsubst git-messenger:function-to-key (func)
@@ -342,6 +344,23 @@ and menus.")
                (let ((key (git-messenger:function-to-key (car fp))))
                  (format "[%s]%s" key (cdr fp))))
              git-messenger:func-prompt " "))
+
+(defun git-messenger:show-parent ()
+  (interactive)
+  (let ((file (buffer-file-name (buffer-base-buffer))))
+    (cl-case git-messenger:vcs
+      (git (with-temp-buffer
+             (unless (zerop (process-file "git" nil t nil
+                                          "blame" "--increment" git-messenger:last-commit-id "--" file))
+               (error "No parent commit ID"))
+             (goto-char (point-min))
+             (when (re-search-forward (concat "^" git-messenger:last-commit-id) nil t)
+               (when (re-search-forward "previous \\(\\S-+\\)" nil t)
+                 (let ((parent (match-string-no-properties 1)))
+                   (setq git-messenger:last-commit-id parent
+                         git-messenger:last-message (git-messenger:commit-message 'git parent)))))
+             (throw 'git-messenger-loop nil)))
+      (otherwise (error "%s does not support for getting parent commit ID" git-messenger:vcs)))))
 
 ;;;###autoload
 (defun git-messenger:popup-message ()
@@ -364,13 +383,16 @@ and menus.")
     (setq git-messenger:vcs vcs
           git-messenger:last-message popuped-message
           git-messenger:last-commit-id commit-id)
-    (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
-    (let ((menu (popup-tip popuped-message :nowait t)))
-      (unwind-protect
-          (catch 'git-messenger-quit
-            (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback
-                                   :prompt (git-messenger:prompt)))
-        (popup-delete menu)))
+    (let (finish)
+      (run-hook-with-args 'git-messenger:before-popup-hook popuped-message)
+      (while (not finish)
+        (let ((menu (popup-tip git-messenger:last-message :nowait t)))
+          (unwind-protect
+              (setq finish (catch 'git-messenger-loop
+                             (popup-menu-event-loop menu git-messenger-map 'popup-menu-fallback
+                                                    :prompt (git-messenger:prompt))
+                             t))
+            (popup-delete menu)))))
     (run-hook-with-args 'git-messenger:after-popup-hook popuped-message)))
 
 (provide 'git-messenger)

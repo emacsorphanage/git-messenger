@@ -1,5 +1,12 @@
 Revision history for git-messenger.el
 
+Revision 0.17 2016/08/16 syohex
+  - Initial support going parent commit(#40)
+  - Show command keys in prompt(#39)
+  - Improve deciding VCS type(#38)
+  - Support merurial(#37 Thanks Sean Farley!!)
+  - Enable view-mode(#36)
+
 Revision 0.16 2015/03/14 syohex
   - Support Subversion
 

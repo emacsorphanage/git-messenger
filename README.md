@@ -8,7 +8,7 @@ This is useful when you want to know why this line was changed.
 
 ## Screenshot
 
-![git-messenger.el](image/git-messenger.png)
+![Screenshot of git-messenger.el](image/git-messenger.png)
 
 
 ## Installation
@@ -40,7 +40,7 @@ You can install `git-messenger` with the following command.
 Pop up last commit message at current line. Show detail message, Commit ID, Author,
 Date and commit message with `C-u` prefix
 
-![git-messenager-detail](image/git-messenger-detail.png)
+![Screenshot of git-messenger with prefix argument](image/git-messenger-detail.png)
 
 
 ## Key Bindings

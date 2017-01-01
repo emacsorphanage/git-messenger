@@ -36,6 +36,8 @@
 (require 'cl-lib)
 (require 'popup)
 
+(declare-function magit-show-commit "magit-diff")
+
 (defgroup git-messenger nil
   "git messenger"
   :group 'vc)
@@ -61,6 +63,10 @@
 Entries in this list will be tried in order to determine whether a
 file is under that sort of version control."
   :type '(repeat symbol))
+
+(defcustom git-messenger:use-magit-popup nil
+  "Use magit-show-commit instead pop-to-buffer"
+  :type 'boolean)
 
 (defvar git-messenger:last-message nil
   "Last message displayed by git-messenger.
@@ -249,9 +255,11 @@ and menus.")
     (erase-buffer)
     (unless (zerop (git-messenger:execute-command vcs args t))
       (error "Failed: '%s(args=%s)'" (git-messenger:vcs-command vcs) args))
-    (pop-to-buffer (current-buffer))
-    (when mode
-      (funcall mode))
+    (if git-messenger:use-magit-popup
+        (magit-show-commit git-messenger:last-commit-id)
+      (pop-to-buffer (current-buffer))
+      (when mode
+        (funcall mode)))
     (run-hooks 'git-messenger:popup-buffer-hook)
     (view-mode +1)
     (goto-char (point-min)))

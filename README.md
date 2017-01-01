@@ -23,7 +23,6 @@ You can install `git-messenger` with the following command.
 ## Dependency
 
 * [popup](https://github.com/auto-complete/popup-el)
-* [cl-lib](http://elpa.gnu.org/packages/cl-lib.html)
 
 
 ## Supported VCS

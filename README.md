@@ -69,6 +69,10 @@ Handled VCS which `git-messenger` uses.
 Entries in this list will be tried in order to determine whether a
 file is under that sort of version control.
 
+### `git-messenger:use-magit-popup`(Default `nil`)
+
+Use `magit-show-commit` instead of `pop-to-buffer`.
+
 ## Hooks
 
 ### `git-messenger:before-popup-hook`
@@ -105,8 +109,9 @@ Last popup-ed commit ID
 
 (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message)
 
-;; Enable magit-commit-mode after typing 's', 'S', 'd'
-(add-hook 'git-messenger:popup-buffer-hook 'magit-commit-mode)
+;; Enable magit-show-commit instead of pop-to-buffer
+(custom-set-variables
+ '(git-messenger:use-magit-popup t))
 ```
 
 [melpa-link]: https://melpa.org/#/git-messenger

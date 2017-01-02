@@ -349,9 +349,15 @@ and menus.")
 
 (defun git-messenger:prompt ()
   (mapconcat (lambda (fp)
-               (let ((key (git-messenger:function-to-key (car fp))))
-                 (format "[%s]%s" key (cdr fp))))
-             git-messenger:func-prompt " "))
+               (let* ((func (car fp))
+                      (desc (cdr fp))
+                      (key (git-messenger:function-to-key func)))
+                 (when (and git-messenger:use-magit-popup (eq func 'git-messenger:popup-show))
+                   (setq desc "magit-show-commit"))
+                 (unless (and git-messenger:use-magit-popup
+                              (memq func '(git-messenger:popup-show-verbose git-messenger:popup-diff)))
+                   (format "[%s]%s " key desc))))
+             git-messenger:func-prompt ""))
 
 (defun git-messenger:show-parent ()
   (interactive)

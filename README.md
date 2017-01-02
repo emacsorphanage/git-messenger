@@ -70,7 +70,7 @@ file is under that sort of version control.
 
 ### `git-messenger:use-magit-popup`(Default `nil`)
 
-Use `magit-show-commit` instead of `pop-to-buffer`.
+Use `magit-show-commit` for showing status/diff commands
 
 ## Hooks
 
@@ -108,7 +108,7 @@ Last popup-ed commit ID
 
 (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message)
 
-;; Enable magit-show-commit instead of pop-to-buffer
+;; Use magit-show-commit for showing status/diff commands
 (custom-set-variables
  '(git-messenger:use-magit-popup t))
 ```

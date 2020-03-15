@@ -186,7 +186,7 @@ and menus.")
         (hg (git-messenger:hg-commit-message commit-id))))))
 
 (defun git-messenger:commit-date (commit-id)
-  (let ((args (list "--no-pager" "show" "--pretty=%cd" commit-id)))
+  (let ((args (list "--no-pager" "show" "--pretty=%ad" commit-id)))
     (with-temp-buffer
       (unless (zerop (git-messenger:execute-command 'git args t))
         (error "Failed 'git show'"))

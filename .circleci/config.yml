@@ -5,7 +5,7 @@ commands:
   default-steps:
     steps:
       - checkout
-      - run: make version || make version
+      - run: make version
       - run: make lint
       - run: make test
 

@@ -17,6 +17,7 @@ version: elpa
 lint: elpa
 	$(CASK) exec $(EMACS) -Q --batch \
 	    --exec "(require 'package)" \
+	    --exec "(add-to-list 'package-archives '(\"gnu\" . \"https://elpa.gnu.org/packages\") t)" \
 	    --exec "(add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages\") t)" \
 	    --exec "(package-initialize)" \
 	    --exec "(require 'elisp-lint)" \

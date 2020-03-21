@@ -1,4 +1,4 @@
-.PHONY : clean distclean test version
+.PHONY : clean distclean lint test version
 
 EMACS ?= emacs
 CASK ?= cask
@@ -6,9 +6,24 @@ CASK ?= cask
 LOADPATH = -L .
 
 ELPA_DIR = $(shell EMACS=$(EMACS) $(CASK) package-directory)
+AUTOLOADS = $(wildcard *-autoloads.el*)
+ELS = $(filter-out $(AUTOLOADS),$(wildcard *.el))
+OBJECTS = $(ELS:.el=.elc)
+BACKUPS = $(ELS:.el=.el~)
 
 version: elpa
 	$(CASK) exec $(EMACS) --version
+
+lint: elpa
+	$(CASK) exec $(EMACS) -Q --batch \
+	    --exec "(require 'package)" \
+	    --exec "(add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages\") t)" \
+	    --exec "(package-initialize)" \
+	    --exec "(require 'elisp-lint)" \
+	    -f elisp-lint-files-batch \
+	    --no-checkdoc \
+	    --no-package-lint \
+	    $(ELS)
 
 test: elpa
 	$(CASK) exec $(EMACS) -Q -batch $(LOADPATH) \
@@ -21,7 +36,7 @@ $(ELPA_DIR): Cask
 	touch $@
 
 clean:
-	rm -rf $(ELPA_DIR)
+	rm -rf $(OBJECTS) $(BACKUPS) $(AUTOLOADS)
 
 distclean:
 	rm -rf .cask

@@ -6,7 +6,7 @@ commands:
     steps:
       - checkout
       - run: make version || make version
-      #- run: make lint
+      - run: make lint
       - run: make test
 
 # Enumerated list of Emacs versions

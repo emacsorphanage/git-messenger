@@ -17,7 +17,6 @@ version: elpa
 lint: elpa
 	$(CASK) exec $(EMACS) -Q --batch \
 	    --exec "(require 'package)" \
-	    --exec "(add-to-list 'package-archives '(\"gnu\" . \"https://elpa.gnu.org/packages\") t)" \
 	    --exec "(add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages\") t)" \
 	    --exec "(package-initialize)" \
 	    --exec "(require 'elisp-lint)" \
@@ -33,6 +32,15 @@ test: elpa
 
 elpa: $(ELPA_DIR)
 $(ELPA_DIR): Cask
+	mkdir -p $(ELPA_DIR)/gnupg && \
+	chmod 700 $(ELPA_DIR)/gnupg && \
+	echo "disable-ipv6" > $(ELPA_DIR)/gnupg/dirmngr.conf && \
+	for i in {1..3}; do \
+	gpg --keyserver keyserver.ubuntu.com \
+	    --homedir $(ELPA_DIR)/gnupg \
+	    --recv-keys 066DAFCB81E42C40 \
+	    && break || sleep 15; \
+	done
 	$(CASK) install
 	touch $@
 

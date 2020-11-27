@@ -321,12 +321,15 @@ and menus.")
 (defun git-messenger:find-vcs ()
   (let ((longest 0)
         result)
-    (dolist (vcs git-messenger:handled-backends result)
+    (dolist (vcs git-messenger:handled-backends)
       (let* ((dir (assoc-default vcs git-messenger:directory-of-vcs))
              (vcs-root (locate-dominating-file default-directory dir)))
         (when (and vcs-root (> (length vcs-root) longest))
           (setq longest (length vcs-root)
-                result vcs))))))
+                result vcs))))
+    (unless result
+      (error "Failed to find a supported version control repository"))
+    result))
 
 (defun git-messenger:svn-message (msg)
   (with-temp-buffer

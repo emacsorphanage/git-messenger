@@ -2,7 +2,7 @@
 
 [![melpa badge][melpa-badge]][melpa-link]
 [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
-[![circleci badge][circleci-badge]][circleci-link]
+[![gh actions badge][gh-actions-badge]][gh-actions-link]
 
 `git-messenger.el` is Emacs port of [git-messenger.vim](https://github.com/rhysd/git-messenger.vim).
 
@@ -119,7 +119,7 @@ Last popup-ed commit ID
 
 [melpa-link]: https://melpa.org/#/git-messenger
 [melpa-stable-link]: https://stable.melpa.org/#/git-messenger
-[circleci-link]: https://app.circleci.com/pipelines/github/emacsorphanage/git-messenger
+[gh-actions-link]: https://github.com/emacsorphanage/git-messenger/actions
 [melpa-badge]: https://melpa.org/packages/git-messenger-badge.svg
 [melpa-stable-badge]: https://stable.melpa.org/packages/git-messenger-badge.svg
-[circleci-badge]: https://img.shields.io/circleci/project/github/emacsorphanage/git-messenger.svg
+[gh-actions-badge]: https://github.com/emacsorphanage/git-messenger/workflows/ci-checks/badge.svg

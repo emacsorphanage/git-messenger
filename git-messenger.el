@@ -346,7 +346,6 @@ and menus.")
 (defvar git-messenger:func-prompt
   '((git-messenger:popup-show . "Show")
     (git-messenger:popup-show-verbose . "Show verbose")
-    (git-messenger:popup-close . "Close")
     (git-messenger:copy-commit-id . "Copy hash")
     (git-messenger:popup-diff . "Diff")
     (git-messenger:copy-message . "Copy message")

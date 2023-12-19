@@ -81,6 +81,12 @@ and menus.")
 This is set before the pop-up is displayed so accessible in the hooks
 and menus.")
 
+(defvar git-messenger:last-directory nil
+  "Last working directory by git-messenger.
+
+This is set before the pop-up is displayed so accessible in the hooks
+and menus.")
+
 (defvar git-messenger:vcs nil)
 
 (defconst git-messenger:directory-of-vcs
@@ -256,19 +262,20 @@ and menus.")
 
 (defun git-messenger:popup-common (vcs args &optional mode)
   (with-current-buffer (get-buffer-create "*git-messenger*")
-    (view-mode -1)
-    (fundamental-mode)
-    (erase-buffer)
-    (unless (zerop (git-messenger:execute-command vcs args t))
-      (error "Failed: '%s(args=%s)'" (git-messenger:vcs-command vcs) args))
-    (if git-messenger:use-magit-popup
-        (magit-show-commit git-messenger:last-commit-id)
-      (pop-to-buffer (current-buffer))
-      (when mode
-        (funcall mode)))
-    (run-hooks 'git-messenger:popup-buffer-hook)
-    (view-mode +1)
-    (goto-char (point-min)))
+    (let ((default-directory git-messenger:last-directory))
+     (view-mode -1)
+     (fundamental-mode)
+     (erase-buffer)
+     (unless (zerop (git-messenger:execute-command vcs args t))
+       (error "Failed: '%s(args=%s)'" (git-messenger:vcs-command vcs) args))
+     (if git-messenger:use-magit-popup
+         (magit-show-commit git-messenger:last-commit-id)
+       (pop-to-buffer (current-buffer))
+       (when mode
+         (funcall mode)))
+     (run-hooks 'git-messenger:popup-buffer-hook)
+     (view-mode +1)
+     (goto-char (point-min))))
   (git-messenger:popup-close))
 
 (defun git-messenger:popup-svn-show ()
@@ -410,6 +417,7 @@ and menus.")
                                      (git-messenger:svn-message msg)))
                               (hg msg)))))
     (setq git-messenger:vcs vcs
+          git-messenger:last-directory (file-name-directory file)
           git-messenger:last-message popuped-message
           git-messenger:last-commit-id commit-id)
     (let (finish)

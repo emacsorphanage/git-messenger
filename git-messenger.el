@@ -197,6 +197,42 @@ and menus.")
         (svn (git-messenger:svn-commit-message commit-id))
         (hg (git-messenger:hg-commit-message commit-id))))))
 
+(defun git-messenger:git-commit-author (commit-id)
+  (let ((args (list "--no-pager" "show" "--pretty=%an" commit-id)))
+    (with-temp-buffer
+      (unless (zerop (git-messenger:execute-command 'git args t))
+        (error "Failed 'git show'"))
+      (goto-char (point-min))
+      (buffer-substring-no-properties
+       (line-beginning-position) (line-end-position)))))
+
+(defun git-messenger:hg-commit-author (commit-id)
+  (let ((args (list "log" "-T" "{author}" "-r" commit-id)))
+    (with-temp-buffer
+      (unless (zerop (git-messenger:execute-command 'hg args t))
+        (error "Failed 'hg log'"))
+      (goto-char (point-min))
+      (buffer-substring-no-properties
+       (line-beginning-position) (line-end-position)))))
+
+(defun git-messenger:svn-commit-author (commit-id)
+  (let ((args (list "log" "-r" commit-id "--quiet" "|" "grep" "'^r'" "|" "awk" "'{print $3}'")))
+    (with-temp-buffer
+      (unless (zerop (git-messenger:execute-command 'svn args t))
+        (error "Failed 'svn log'"))
+      (goto-char (point-min))
+      (buffer-substring-no-properties
+       (line-beginning-position) (line-end-position)))))
+
+(defun git-messenger:commit-author (vcs commit-id)
+  (with-temp-buffer
+    (if (git-messenger:not-committed-id-p commit-id)
+        "* not yet committed *"
+      (cl-case vcs
+        (git (git-messenger:git-commit-author commit-id))
+        (svn (git-messenger:svn-commit-author commit-id))
+        (hg (git-messenger:hg-commit-author commit-id))))))
+
 (defun git-messenger:commit-date (commit-id)
   (let ((args (list "--no-pager" "show" "--pretty=%ad" commit-id)))
     (with-temp-buffer
@@ -392,10 +428,13 @@ and menus.")
                     (concat "^" git-messenger:last-commit-id)
                     nil t)
                (when (re-search-forward "previous \\(\\S-+\\)" nil t)
-                 (let ((parent (match-string-no-properties 1)))
+                 (let* ((parent (match-string-no-properties 1))
+                        (author (git-messenger:commit-author 'git parent))
+                        (msg (git-messenger:commit-message 'git parent)))
                    (setq git-messenger:last-commit-id parent
-                         git-messenger:last-message (git-messenger:commit-message
-                                                     'git parent)))))
+                         git-messenger:last-message (if (git-messenger:show-detail-p parent)
+                                                        (git-messenger:format-detail 'git parent author msg)
+                                                      msg)))))
              (throw 'git-messenger-loop nil)))
       (otherwise (error "%s does not support for getting parent commit ID"
                         git-messenger:vcs)))))
